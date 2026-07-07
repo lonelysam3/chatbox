@@ -40,7 +40,7 @@ WEB_PAGE = """<!doctype html>
       <label>Default model<input id="default_model" /></label>
       <label>New API key (leave blank to keep existing)<input id="api_key" type="password" /></label>
       <div class="small">Current key: <span id="api_key_masked"></span></div>
-      <button onclick="saveSettings()">Save Settings</button>
+      <button onclick="save_settings()">Save Settings</button>
       <pre id="settings_result"></pre>
     </div>
 
@@ -48,7 +48,7 @@ WEB_PAGE = """<!doctype html>
       <h2>Chat</h2>
       <label>Model<input id="chat_model" /></label>
       <label>Message<textarea id="chat_message"></textarea></label>
-      <button onclick="sendChat()">Send Chat</button>
+      <button onclick="send_chat()">Send Chat</button>
       <pre id="chat_result"></pre>
     </div>
   </div>
@@ -58,12 +58,12 @@ WEB_PAGE = """<!doctype html>
     <label>Model<input id="scan_model" /></label>
     <label>Language<input id="scan_language" value="python" /></label>
     <label>Code<textarea id="scan_code"></textarea></label>
-    <button onclick="scanCode()">Analyze Vulnerabilities</button>
+    <button onclick="scan_code()">Analyze Vulnerabilities</button>
     <pre id="scan_result"></pre>
   </div>
 
   <script>
-    async function request(url, method='GET', body=null) {
+    async function make_request(url, method='GET', body=null) {
       const res = await fetch(url, {
         method,
         headers: {'Content-Type': 'application/json'},
@@ -74,8 +74,8 @@ WEB_PAGE = """<!doctype html>
       return data;
     }
 
-    async function loadSettings() {
-      const data = await request('/api/settings');
+    async function load_settings() {
+      const data = await make_request('/api/settings');
       provider_id.value = data.provider_id;
       base_url.value = data.base_url;
       default_model.value = data.default_model;
@@ -85,7 +85,7 @@ WEB_PAGE = """<!doctype html>
       settings_result.textContent = JSON.stringify(data, null, 2);
     }
 
-    async function saveSettings() {
+    async function save_settings() {
       try {
         const payload = {
           provider_id: provider_id.value,
@@ -93,7 +93,7 @@ WEB_PAGE = """<!doctype html>
           default_model: default_model.value,
           api_key: api_key.value,
         };
-        const data = await request('/api/settings', 'POST', payload);
+        const data = await make_request('/api/settings', 'POST', payload);
         api_key.value = '';
         api_key_masked.textContent = data.api_key_masked;
         settings_result.textContent = JSON.stringify(data, null, 2);
@@ -102,9 +102,9 @@ WEB_PAGE = """<!doctype html>
       }
     }
 
-    async function sendChat() {
+    async function send_chat() {
       try {
-        const data = await request('/api/chat', 'POST', {
+        const data = await make_request('/api/chat', 'POST', {
           model: chat_model.value,
           message: chat_message.value,
         });
@@ -114,9 +114,9 @@ WEB_PAGE = """<!doctype html>
       }
     }
 
-    async function scanCode() {
+    async function scan_code() {
       try {
-        const data = await request('/api/vulnerability-detect', 'POST', {
+        const data = await make_request('/api/vulnerability-detect', 'POST', {
           model: scan_model.value,
           language: scan_language.value,
           code: scan_code.value,
@@ -127,7 +127,7 @@ WEB_PAGE = """<!doctype html>
       }
     }
 
-    loadSettings().catch((err) => {
+    load_settings().catch((err) => {
       settings_result.textContent = String(err);
     });
   </script>
