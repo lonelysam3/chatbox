@@ -53,3 +53,28 @@ class AIChatCore:
             stream=True,
         )
         return provider.stream_chat_completion(request)
+
+    def detect_vulnerabilities(
+        self,
+        *,
+        code: str,
+        language: str,
+        model: str,
+        provider_id: Optional[str] = None,
+    ) -> str:
+        prompt = (
+            "You are a senior application security reviewer. "
+            "Analyze the provided code for real, exploitable vulnerabilities only. "
+            "Return markdown with sections: Summary, Findings, and Fix Recommendations. "
+            "For each finding include severity (CRITICAL/HIGH/MEDIUM/LOW), CWE if known, "
+            "affected snippet reference, exploit scenario, and concrete remediation.\n\n"
+            f"Language: {language}\n"
+            "Code:\n"
+            f"{code}"
+        )
+        return self.chat(
+            model=model,
+            provider_id=provider_id,
+            user_message=prompt,
+            system_prompt="Focus on security issues. Do not report style or non-security comments.",
+        )
