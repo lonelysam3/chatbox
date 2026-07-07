@@ -3,24 +3,24 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from .config import ProviderConfig
-from .providers import OpenAICompatibleProvider
+from .config import provider_config
+from .providers import open_ai_compatible_provider
 
 
 @dataclass
-class ModelRoute:
+class model_route:
     model_prefix: str
     provider_id: str
 
 
-class ModelRouter:
+class model_router:
     """Model selection/router."""
 
-    def __init__(self, providers: Dict[str, ProviderConfig], routes: Optional[list[ModelRoute]] = None):
+    def __init__(self, providers: Dict[str, provider_config], routes: Optional[list[model_route]] = None):
         self.providers = providers
         self.routes = routes or []
 
-    def resolve_provider(self, model: str, provider_id: Optional[str] = None) -> OpenAICompatibleProvider:
+    def resolve_provider(self, model: str, provider_id: Optional[str] = None) -> open_ai_compatible_provider:
         resolved = provider_id
         if not resolved:
             for route in self.routes:
@@ -33,4 +33,4 @@ class ModelRouter:
         config = self.providers.get(resolved)
         if not config:
             raise ValueError(f"Unknown provider_id: {resolved}")
-        return OpenAICompatibleProvider(config)
+        return open_ai_compatible_provider(config)

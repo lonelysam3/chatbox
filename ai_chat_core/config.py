@@ -5,7 +5,7 @@ from typing import Dict, Optional
 
 
 @dataclass(frozen=True)
-class ProviderConfig:
+class provider_config:
     provider_id: str
     api_key: str
     base_url: str
@@ -13,7 +13,7 @@ class ProviderConfig:
 
 
 @dataclass(frozen=True)
-class ChatRequest:
+class chat_request:
     model: str
     user_message: str
     system_prompt: Optional[str] = None

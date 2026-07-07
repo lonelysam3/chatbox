@@ -7,8 +7,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict
 from urllib.parse import urlparse
 
-from .service import AIChatService
-from .settings import SettingsError
+from .service import ai_chat_service
+from .settings import settings_error
 
 
 WEB_PAGE = """<!doctype html>
@@ -136,8 +136,8 @@ WEB_PAGE = """<!doctype html>
 """
 
 
-class APIHandler(BaseHTTPRequestHandler):
-    server: "AIHTTPServer"
+class api_handler(BaseHTTPRequestHandler):
+    server: "ai_http_server"
 
     def _send_json(self, status: int, payload: Dict[str, Any]) -> None:
         body = json.dumps(payload).encode("utf-8")
@@ -207,21 +207,21 @@ class APIHandler(BaseHTTPRequestHandler):
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
         except json.JSONDecodeError:
             self._send_json(HTTPStatus.BAD_REQUEST, {"error": "Invalid JSON payload"})
-        except (ValueError, SettingsError) as exc:
+        except (ValueError, settings_error) as exc:
             self._send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
         except Exception as exc:  # noqa: BLE001
             self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": str(exc)})
 
 
-class AIHTTPServer(ThreadingHTTPServer):
-    def __init__(self, server_address: tuple[str, int], handler_cls: type[BaseHTTPRequestHandler], service: AIChatService):
+class ai_http_server(ThreadingHTTPServer):
+    def __init__(self, server_address: tuple[str, int], handler_cls: type[BaseHTTPRequestHandler], service: ai_chat_service):
         super().__init__(server_address, handler_cls)
         self.service = service
 
 
 def run_server(host: str, port: int, settings_path: str | None = None) -> None:
-    service = AIChatService(settings_path=settings_path)
-    server = AIHTTPServer((host, port), APIHandler, service)
+    service = ai_chat_service(settings_path=settings_path)
+    server = ai_http_server((host, port), api_handler, service)
     print(f"AI Chat Core server running at http://{host}:{port}")
     try:
         server.serve_forever()

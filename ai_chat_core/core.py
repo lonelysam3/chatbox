@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import Iterable, Optional
 
-from .config import ChatRequest
-from .router import ModelRouter
+from .config import chat_request
+from .router import model_router
 
 
-class AIChatCore:
+class ai_chat_core:
     """Core chat call logic."""
 
-    def __init__(self, router: ModelRouter):
+    def __init__(self, router: model_router):
         self.router = router
 
     def chat(
@@ -23,7 +23,7 @@ class AIChatCore:
         max_tokens: Optional[int] = None,
     ) -> str:
         provider = self.router.resolve_provider(model=model, provider_id=provider_id)
-        request = ChatRequest(
+        request = chat_request(
             model=model,
             user_message=user_message,
             system_prompt=system_prompt,
@@ -44,7 +44,7 @@ class AIChatCore:
         max_tokens: Optional[int] = None,
     ) -> Iterable[str]:
         provider = self.router.resolve_provider(model=model, provider_id=provider_id)
-        request = ChatRequest(
+        request = chat_request(
             model=model,
             user_message=user_message,
             system_prompt=system_prompt,
