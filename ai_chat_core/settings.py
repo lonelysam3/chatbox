@@ -11,14 +11,14 @@ DEFAULT_SETTINGS_PATH = Path.home() / ".ai_chat_core" / "settings.json"
 
 
 @dataclass
-class RuntimeSettings:
+class runtime_settings:
     provider_id: str
     api_key: str
     base_url: str
     default_model: str
 
 
-class SettingsError(RuntimeError):
+class settings_error(RuntimeError):
     pass
 
 
@@ -31,8 +31,8 @@ def resolve_settings_path(custom_path: str | None = None) -> Path:
     return DEFAULT_SETTINGS_PATH
 
 
-def default_settings_from_env() -> RuntimeSettings:
-    return RuntimeSettings(
+def default_settings_from_env() -> runtime_settings:
+    return runtime_settings(
         provider_id=os.getenv("AI_PROVIDER_ID", "openai"),
         api_key=os.getenv("AI_API_KEY", ""),
         base_url=os.getenv("AI_BASE_URL", "https://api.openai.com/v1"),
@@ -40,18 +40,18 @@ def default_settings_from_env() -> RuntimeSettings:
     )
 
 
-def load_settings(path: Path) -> RuntimeSettings:
+def load_settings(path: Path) -> runtime_settings:
     defaults = default_settings_from_env()
     if not path.exists():
         if not defaults.api_key:
-            raise SettingsError("API key is missing. Set AI_API_KEY or configure it in the web UI.")
+            raise settings_error("API key is missing. Set AI_API_KEY or configure it in the web UI.")
         save_settings(path, defaults)
         return defaults
 
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise SettingsError(f"Failed to read settings: {exc}") from exc
+        raise settings_error(f"Failed to read settings: {exc}") from exc
 
     merged = {
         "provider_id": payload.get("provider_id", defaults.provider_id),
@@ -61,20 +61,20 @@ def load_settings(path: Path) -> RuntimeSettings:
     }
 
     if not merged["api_key"]:
-        raise SettingsError("API key is missing. Update settings with a valid API key.")
+        raise settings_error("API key is missing. Update settings with a valid API key.")
 
-    return RuntimeSettings(**merged)
+    return runtime_settings(**merged)
 
 
-def save_settings(path: Path, settings: RuntimeSettings) -> None:
+def save_settings(path: Path, settings: runtime_settings) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(asdict(settings), indent=2), encoding="utf-8")
     except OSError as exc:
-        raise SettingsError(f"Failed to save settings: {exc}") from exc
+        raise settings_error(f"Failed to save settings: {exc}") from exc
 
 
-def update_settings(current: RuntimeSettings, payload: Dict[str, Any]) -> RuntimeSettings:
+def update_settings(current: runtime_settings, payload: Dict[str, Any]) -> runtime_settings:
     provider_id = str(payload.get("provider_id") or current.provider_id).strip()
     base_url = str(payload.get("base_url") or current.base_url).strip()
     default_model = str(payload.get("default_model") or current.default_model).strip()
@@ -85,7 +85,7 @@ def update_settings(current: RuntimeSettings, payload: Dict[str, Any]) -> Runtim
     else:
         api_key = str(submitted_api_key).strip() or current.api_key
 
-    updated = RuntimeSettings(
+    updated = runtime_settings(
         provider_id=provider_id,
         api_key=api_key,
         base_url=base_url,
@@ -93,13 +93,13 @@ def update_settings(current: RuntimeSettings, payload: Dict[str, Any]) -> Runtim
     )
 
     if not updated.api_key:
-        raise SettingsError("api_key cannot be empty")
+        raise settings_error("api_key cannot be empty")
     if not updated.base_url:
-        raise SettingsError("base_url cannot be empty")
+        raise settings_error("base_url cannot be empty")
     if not updated.provider_id:
-        raise SettingsError("provider_id cannot be empty")
+        raise settings_error("provider_id cannot be empty")
     if not updated.default_model:
-        raise SettingsError("default_model cannot be empty")
+        raise settings_error("default_model cannot be empty")
 
     return updated
 

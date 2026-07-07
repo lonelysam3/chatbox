@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from .service import AIChatService
+from .service import ai_chat_service
 
 
 def main() -> int:
@@ -16,7 +16,7 @@ def main() -> int:
     parser.add_argument("--no-stream", action="store_true")
     args = parser.parse_args()
 
-    service = AIChatService(settings_path=args.settings_path)
+    service = ai_chat_service(settings_path=args.settings_path)
     if args.no_stream:
         result = service.chat(
             provider_id=args.provider_id,

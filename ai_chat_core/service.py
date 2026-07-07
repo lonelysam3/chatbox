@@ -4,34 +4,34 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .config import ProviderConfig
-from .core import AIChatCore
-from .router import ModelRoute, ModelRouter
-from .settings import RuntimeSettings, load_settings, mask_api_key, resolve_settings_path, save_settings, update_settings
+from .config import provider_config
+from .core import ai_chat_core
+from .router import model_route, model_router
+from .settings import runtime_settings, load_settings, mask_api_key, resolve_settings_path, save_settings, update_settings
 
 
-class AIChatService:
+class ai_chat_service:
     def __init__(self, settings_path: str | None = None):
         self.settings_path = resolve_settings_path(settings_path)
         self.settings = load_settings(self.settings_path)
 
-    def _build_core(self) -> AIChatCore:
+    def _build_core(self) -> ai_chat_core:
         providers = {
-            self.settings.provider_id: ProviderConfig(
+            self.settings.provider_id: provider_config(
                 provider_id=self.settings.provider_id,
                 api_key=self.settings.api_key,
                 base_url=self.settings.base_url,
             )
         }
-        router = ModelRouter(
+        router = model_router(
             providers=providers,
             routes=[
-                ModelRoute("gpt-", self.settings.provider_id),
-                ModelRoute("o", self.settings.provider_id),
-                ModelRoute("claude-", self.settings.provider_id),
+                model_route("gpt-", self.settings.provider_id),
+                model_route("o", self.settings.provider_id),
+                model_route("claude-", self.settings.provider_id),
             ],
         )
-        return AIChatCore(router)
+        return ai_chat_core(router)
 
     def get_public_settings(self) -> Dict[str, Any]:
         return {
@@ -87,8 +87,8 @@ class AIChatService:
             provider_id=provider_id,
         )
 
-    def export_settings(self) -> RuntimeSettings:
-        return RuntimeSettings(**asdict(self.settings))
+    def export_settings(self) -> runtime_settings:
+        return runtime_settings(**asdict(self.settings))
 
     @property
     def path(self) -> Path:
